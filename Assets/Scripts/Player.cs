@@ -62,10 +62,9 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Obstacle"))
+        if (collision.gameObject.CompareTag("Obstacle") || collision.gameObject.CompareTag("TopPipe") || collision.gameObject.CompareTag("BottomPipe"))
         {
             alive = false;
-            
         } else if(collision.gameObject.CompareTag("Scoring") && alive)
         {
             score++;

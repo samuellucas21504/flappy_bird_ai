@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
 
     public void UpdateCounter(string counter)
     {
+        Debug.Log(counter);
         this.counter.text = counter;
     }
 

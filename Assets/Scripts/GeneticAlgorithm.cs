@@ -136,6 +136,7 @@ public class GeneticAlgorithm : MonoBehaviour
     void UpdateCounter()
     {
         var maxCount = runningBirds.Max(x => x.GetComponent<Player>().publicScore);
+        Debug.Log($"maxCount {maxCount}");
         gameManager.UpdateCounter(maxCount.ToString());
     }
 
@@ -170,5 +171,62 @@ public class GeneticAlgorithm : MonoBehaviour
         {
             Destroy(go);
         }
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.black;
+        Handles.color = Color.black;
+
+        Vector2 dx = new Vector2(0.8f, 0);
+        Vector2 dy = new Vector2(0, -0.3f);
+
+        Vector2 pos = new Vector2(0.1f, 0.7f);
+        Vector2 pos11 = pos + 1.5f * dy;
+        Vector2 pos12 = pos + 2.5f * dy;
+        Vector2 pos13 = pos + 3.5f * dy;
+        Vector2 pos14 = pos + 4.5f * dy;
+        Vector2 pos15 = pos + 5.5f * dy;
+        Vector2 pos16 = pos + 6.5f * dy;
+        Vector2 pos31 = pos + 2.5f * dy + 2 * dx;
+
+
+        NeuralNetwork nn = runningBirds[0].GetComponent<NeuralNetwork>();
+
+        for (int i = 0; i < nn.hiddenLayerSize; i++)
+        {
+            Vector2 pos2i = pos + dx + i * dy;
+
+            DrawConnection(nn.weights1[0, i], pos11, pos2i, -dx / 3 - dy / 5);
+            DrawConnection(nn.weights1[1, i], pos12, pos2i, -dy / 5);
+            DrawConnection(nn.weights1[2, i], pos13, pos2i, -dx / 3 - dy / 5);
+            DrawConnection(nn.weights1[3, i], pos14, pos2i, -dy / 5);
+            DrawConnection(nn.weights1[0, i], pos15, pos2i, -dx / 3 - dy / 5);
+            DrawConnection(nn.weights1[1, i], pos16, pos2i, -dy / 5);
+            DrawConnection(nn.weights2[i], pos2i, pos31, -dy / 5 - dx / 5);
+            
+            DrawNode(nn.hiddenNode[i], pos2i);
+        }
+        DrawNode(nn.input_dx, pos11);
+        DrawNode(nn.input_dy, pos12);
+        DrawNode(nn.input_top_pipe_dx, pos13);
+        DrawNode(nn.input_top_pipe_dy, pos14);
+        DrawNode(nn.input_bottom_pipe_dx, pos15);
+        DrawNode(nn.input_bottom_pipe_dy, pos16);
+        DrawNode(nn.output, pos31);
+    }
+
+    void DrawConnection(float weight, Vector2 pos1, Vector2 pos2, Vector2 offset)
+    {
+        Gizmos.color = (weight > 0) ? Color.green : Color.red;
+        Gizmos.DrawLine(pos1, pos2);
+        Handles.Label((pos1 + pos2) / 2 + offset, weight.ToString("F2"));
+    }
+
+    void DrawNode(float value, Vector2 pos)
+    {
+        Gizmos.color = (value > 0) ? Color.green : Color.red;
+        Gizmos.DrawSphere(pos, 0.1f);
+        Handles.Label(pos + new Vector2(0, -0.1f), value.ToString("F2"));
     }
 }

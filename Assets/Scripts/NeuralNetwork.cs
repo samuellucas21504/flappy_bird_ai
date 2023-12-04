@@ -8,11 +8,15 @@ public class NeuralNetwork : MonoBehaviour
     public GeneticAlgorithm algorithm;
     public Player bird;
 
-    private int inputLayerSize = 2;
+    private int inputLayerSize = 6;
     public int hiddenLayerSize = 6;
 
     public float input_dx;
     public float input_dy;
+    public float input_bottom_pipe_dx;
+    public float input_bottom_pipe_dy;
+    public float input_top_pipe_dx;
+    public float input_top_pipe_dy;
     public float[,] weights1;
     public float[] weights2;
     public float[] bias1;
@@ -39,16 +43,28 @@ public class NeuralNetwork : MonoBehaviour
         if (bird & bird.alive)
         {
             GameObject scoringZone = FindNextScoringZone();
+            GameObject closestBottomPipe = FindClosestBottomPipe();
+            GameObject closestTopPipe = FindClosestTopPipe();
 
             if (scoringZone != null)
             {
                 input_dx = (scoringZone.transform.position.x - transform.position.x) / 3;
+                input_top_pipe_dx = (closestTopPipe.transform.position.x - transform.position.x) / 3;
+                input_bottom_pipe_dx = (closestBottomPipe.transform.position.x - transform.position.x) / 3;
+
                 input_dy = transform.position.y - scoringZone.transform.position.y;
+                input_top_pipe_dy = -(transform.position.y - closestTopPipe.transform.position.y) * 1.05f;
+                input_bottom_pipe_dy = transform.position.y - (closestBottomPipe.transform.position.y * 1.05f);
             }
             else
             {
                 input_dx = (3 - transform.position.x) / 3;
+                input_bottom_pipe_dx = (3 - transform.position.x) / 3;
+                input_top_pipe_dx = (3 - transform.position.x) / 3;
+
                 input_dy = transform.position.y;
+                input_bottom_pipe_dy = 0;
+                input_top_pipe_dy = 0;
             }
 
             output = Eval();
@@ -60,10 +76,49 @@ public class NeuralNetwork : MonoBehaviour
         }
     }
 
+    public GameObject FindClosestTopPipe()
+    {
+        GameObject[] pipes = GameObject.FindGameObjectsWithTag("TopPipe");
+        GameObject closest = null;
+        float distance = Mathf.Infinity;
+        Vector3 position = transform.position;
+
+        foreach (GameObject pipe in pipes)
+        {
+            float currentDistance = pipe.transform.position.x - position.x;
+            if (currentDistance < distance & currentDistance > -0.25f)
+            {
+                closest = pipe;
+                distance = currentDistance;
+            }
+        }
+
+        return closest;
+    }
+
+    public GameObject FindClosestBottomPipe()
+    {
+        GameObject[] pipes = GameObject.FindGameObjectsWithTag("BottomPipe");
+        GameObject closest = null;
+        float distance = Mathf.Infinity;
+        Vector3 position = transform.position;
+
+        foreach (GameObject pipe in pipes)
+        {
+            float currentDistance = pipe.transform.position.x - position.x;
+            if (currentDistance < distance & currentDistance > -0.25f)
+            {
+                closest = pipe;
+                distance = currentDistance;
+            }
+        }
+
+        return closest;
+    }
+
     public GameObject FindNextScoringZone()
     {
-        GameObject[] scoringZones;
-        scoringZones = GameObject.FindGameObjectsWithTag("Scoring");
+        GameObject[] scoringZones = GameObject.FindGameObjectsWithTag("Scoring");
         GameObject closest = null;
         float distance = Mathf.Infinity;
         Vector3 position = transform.position;
@@ -102,7 +157,7 @@ public class NeuralNetwork : MonoBehaviour
         float outputLayer = 0;
         for (int j = 0; j < hiddenLayerSize; j++)
         {
-            float sum = weights1[0, j] * input_dx + weights1[1, j] * input_dy;
+            float sum = (weights1[0, j] * input_dx + weights1[1, j] * input_bottom_pipe_dx + weights1[2, j]) / 3 + weights1[3, j] * input_dy + weights1[4, j] * input_bottom_pipe_dy + weights1[5, j] * input_top_pipe_dy;
             float hiddenLayerOut1 = stepFunction(sum, bias1[j]);
             hiddenNode[j] = hiddenLayerOut1;
 
