@@ -122,6 +122,7 @@ public class GeneticAlgorithm : MonoBehaviour
 
                 runningBirds[i] = BreedBird(winningBirds[j], winningBirds[k]);
                 runningBirds[i].name = ("bird " + generation + " " + j + "_" + k).ToString();
+                runningBirds[i].GetComponent<Player>().alive = true;
                 runningBirds[i].GetComponent<NeuralNetwork>().Mutate();
             }
         }
